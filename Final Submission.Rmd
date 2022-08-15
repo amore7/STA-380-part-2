@@ -1,13 +1,1051 @@
 ---
 title: 'STA 380, Part 2: Exercises'
-author: "Anthony Moreno, Mark Moreno, Kai Zhang"
+author: "Anthony Moreno, Mark Moreno, Kai Zhang, Carlee Allen"
 date: '2022-08-15'
-output: md_document
+output: pdf_document
 ---
 
 ## **STA 380, Part 2: Exercises**
 
-## Probability Practice
-### **Part a**
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
+\tableofcontents
+
+\clearpage
+
+# Probability Practice
+
+```{r , echo=FALSE, out.width = '90%'}
+knitr::include_graphics("PartA.jpeg")
+```
+
+```{r pressure, echo=FALSE, out.width = '90%'}
+knitr::include_graphics("PartB.jpeg")
+```
+
+
+
+# Wrangling the Billboard Top 100
+### Part A
+```{r, echo=FALSE}
+library('dplyr')
+billboard<-read.csv('billboard.csv')
+top_10 = billboard %>% 
+  group_by(song, performer) %>% 
+  summarize(count = n())%>%
+            arrange(desc(count))
+head(top_10,10)
+```
+
+### Part B
+
+
+```{r,echo=FALSE}
+library(ggplot2)
+uniqueSong = billboard %>%
+  group_by(year) %>%
+  mutate(unique_song = n_distinct(song)) %>%
+  filter((!duplicated(year)) & (year != 1958) & (year != 2021))%>%
+  select(year,unique_song) %>%
+    arrange(year)
+ggplot(data = uniqueSong,aes(x=year, y=unique_song))+
+  geom_line()+
+  geom_point()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))+
+   labs(subtitle="Number of Unique Songs Appeared on Top 100 List Over Years")
+```
+
+### Music diversity declined starting from the 70. People seems to like the same music with less diversity from the 70s through mid 2000s. People's taste has become more diverse since then and has reached the diversity peak in mid 60s.
+
+
+### Part C
+
+```{r,echo=FALSE}
+ten_week_hit <- billboard %>%
+  group_by(song_id) %>% mutate(appearance = n())%>%
+  filter (appearance>=10)%>%
+  select(song_id,performer, appearance)%>%
+  group_by(performer)%>%
+  summarise(count = n_distinct(song_id))%>%
+  filter (count>=30)%>%
+  arrange(count)
+ten_week_hit
+ggplot(data=ten_week_hit, aes(x=performer, y=count)) +
+  geom_bar(stat="identity")+coord_flip()+
+     labs(subtitle="Performers with the most ten-week-hit songs")
+```
+
+## Visual story telling part 1: green buildings
+```{r, include=FALSE}
+data_directory = 'C:/Users/chama/OneDrive/Documents/SUMMER 2022/Machine Learning/2nd half/Project'
+setwd(data_directory)
+data = read.csv('greenbuildings.csv')
+```
+```{r, include=FALSE}
+library(mosaic)
+library(tidyverse)
+```
+
+```{r, include=FALSE}
+#make variables into factors
+data$green_rating = as.factor(data$green_rating)
+data$LEED = as.factor(data$LEED)
+data$Energystar = as.factor(data$Energystar)
+data$amenities = as.factor(data$amenities)
+data$renovated = as.factor(data$renovated)
+data$class_a = as.factor(data$class_a)
+data$class_b = as.factor(data$class_b)
+data$net = as.factor(data$net)
+```
+### **Problem**
+An Austin real-estate developer is interested in the possible economic impact of "going green" in her latest project: a new 15-story mixed-use building on East Cesar Chavez, just across I-35 from downtown. Will investing in a green building be worth it, from an economic perspective? The baseline construction costs are $100 million, with a 5% expected premium for green certification.
+
+The developer has had someone on her staff, who's been described to her as a "total Excel guru from his undergrad statistics course," run some numbers on this data set and make a preliminary recommendation. Here's how this person described his process:
+
+> I began by cleaning the data a little bit. In particular, I noticed that a handful of the buildings in the data set had very low occupancy rates (less than 10% of available space occupied). I decided to remove these buildings from consideration, on the theory that these buildings might have something weird going on with them, and could potentially distort the analysis. Once I scrubbed these low-occupancy buildings from the data set, I looked at the green buildings and non-green buildings separately. The median market rent in the non-green buildings was $25 per square foot per year, while the median market rent in the green buildings was $27.60 per square foot per year: about $2.60 more per square foot. (I used the median rather than the mean, because there were still some outliers in the data, and the median is a lot more robust to outliers.) Because our building would be 250,000 square feet, this would translate into an additional $250000 x 2.6 = $650000 of extra revenue per year if we build the green building.
+
+> Our expected baseline construction costs are $100 million, with a 5% expected premium for green certification. Thus we should expect to spend an extra $5 million on the green building. Based on the extra revenue we would make, we would recuperate these costs in $5000000/650000 = 7.7 years. Even if our occupancy rate were only 90%, we would still recuperate the costs in a little over 8 years. Thus from year 9 onwards, we would be making an extra $650,000 per year in profit. Since the building will be earning rents for 30 years or more, it seems like a good financial move to build the green building.
+> Goal: The developer listened to this recommendation, understood the analysis, and still felt unconvinced. She has therefore asked you to revisit the report, so that she can get a second opinion.
+
+### Exploratory Data Analysis
+it may seem like the stats guru is on point with their analysis upon first glance 
+when using the same assumption and removing the rows with occupancy rates lower than
+10%, the green buildings still average $2.6 dollars more per square foot. 
+```{r echo=FALSE}
+data %>% filter(leasing_rate>=10)%>% group_by(green_rating) %>% 
+  summarise(med_rent = median(Rent), count = n())
+```
+
+While looking at the box plot we see that the non-green buildings have a fair amount
+more outliers, which explains the guru's reasoning for using the median as opposed 
+to the mean.
+
+```{r echo=FALSE}
+ggplot(data, aes(green_rating, Rent)) + geom_boxplot()
+```
+
+### Rent vs. Occupancy Rates
+
+We can see that the minimum rent is fairly constant for all occupancy rates, but the
+maximum increases with higher occupancy rates:
+
+```{r echo=FALSE}
+ggplot(data, aes(leasing_rate, Rent, color = green_rating)) + geom_point()
+```
+
+Looking further into this we can note that the green buildings have a higher median occupancy 
+rate, which could be attributed to the awarness mentioned in the information provided with
+the problem, but the true cause can't be verified with the data provded.
+
+```{r echo=FALSE}
+data %>% group_by(green_rating) %>% summarise(med_occupancy = median(leasing_rate), count = n())
+```
+
+### Age vs. Occupancy Rates
+
+From the plot there is no clear relationship between age and occupancy rate.
+
+```{r echo=FALSE}
+ggplot(data, aes(age, leasing_rate, color = green_rating)) + geom_point()
+```
+
+## POSSIBLE UNEXPECTED FACTORS AFFECTING RENT DIFFERENCE
+
+Factors that may inderectly influence the rent for buildings
+
+### 1. Number of stories
+
+From the plot, we can see that the minimum rent charged increases with the number of 
+stories, but the median height of a green building is only one story taller than a 
+non-green building, which likely isn't a large enough difference. So while a taller
+building may be able to demand more rent, this likely isn't a strong enough factor to 
+influence the decision to go green. 
+
+```{r echo=FALSE}
+ggplot(data, aes(stories, Rent, color = green_rating)) + geom_point()
+data %>% group_by(green_rating) %>% summarise(med_stories = median(stories))
+```
+
+### 2. Amenities
+
+When loooking at the possility of amenities being a factor in raising rent, we see that
+most green buildings have amenities (~73%), where about only half non-green buildings 
+have them (~52%). When comparting rent for green and non-green buildings with and withput
+amenities, we see that green buildings still charge $2 to $2.8 more per square foot irreguarless
+of amenities, meaning this isn't a factor in the differnce in rent.
+
+```{r echo=FALSE}
+data %>% group_by(green_rating, amenities) %>% summarise(med_rent = median(Rent), count = n())
+```
+
+### 3. Age
+
+We can see that the median green building is about 15 years newer than the median non-green
+building, thus we should consider that maybe newer buildings demand a higher rent by default
+and that this upcharge isn't necessarily due to the fact the building is green.
+
+```{r echo=FALSE}
+data %>% group_by(green_rating) %>% summarise(med_age = median(age), count = n())
+```
+
+Looking at the plot of rent vs building age, there is hard to see a clear correlation
+in the data, with maybe a slight downward trend after the building has reached 100 years
+old, but there isn't enough data on green buildings at that age to manke any conclusions.
+
+```{r echo=FALSE}
+ggplot(data, aes(age, Rent, color = green_rating)) + geom_point()
+```
+
+### 4. Space
+
+When looking at the plot of rent vs square footage, we can see that the minimum rent 
+charged increases with available leasing space. 
+
+```{r echo=FALSE}
+ggplot(data, aes(size, Rent, color = green_rating)) + geom_point()
+```
+
+Then, when we look a the median and mean square footage for green and non-green buildings
+we see that green building have a greater value for each, so they have more space to
+lease in general, which could be a potential unexpected factor in the rent upcharge.
+
+```{r echo=FALSE}
+data %>% group_by(green_rating)%>% summarize(med_size = median(size), mean_size = mean(size))
+```
+
+### 5. Clustering (Building location)
+
+Could location influence the rent price for buildings? Could we use location to maximize 
+profits for our new building?
+
+Looking at a plot of rent vs cluster, we can notice a distinct trend in clusters 300 to
+around 600. When looking at the median value for these clusters separating by if the 
+building is green or not, we can see that the green buildings charge ~$4.8 more per square
+foot in the same cluster, meaning in these areas the perception of a green building is potentially
+more positive and people are willing to pay more to be viewed as environmentally conscious.
+
+```{r echo=FALSE}
+#I decided cluster grouping below (300 to 600), based off trial and error to maximize 
+#difference in median rent price
+ggplot(data, aes(cluster, Rent, color = green_rating)) + geom_point()
+data %>% filter(cluster>=300 & cluster<=600) %>% group_by(green_rating) %>%summarise(med = median(Rent), count = n())
+
+```
+### Summary and Conclusions 
+
+- There is a slight positive relationship between rent and occupancy rates.
+
+- Green buildings have a slightly higher rate of occupancy.
+
+- No clear corrolation between building age and occupancy rate
+
+- There is an additional $2.6 per square foot in revenue for green buildings, and this 
+difference increases to ~$4.8 for clusters 300 - 600.
+
+- Rent and available square footage have a small positive corrolation.
+
+- Green buildings are, on average, ~ 100,000 square feet larger than non-green buildings,
+but more data is needed to further explore this idea.
+
+The guru seems to be correct, with the average age of green buildings being 22 years, we should
+expect to make our money back within 10 years then make additional revenue from then on.
+
+## Visual story telling part 2: Capital Metro data
+
+```{r echo=FALSE}
+#Reading Data
+data=read.csv(file ="capmetro_UT.csv")
+library(mosaic)
+library(tidyverse)
+library(dplyr)
+library(patchwork)
+
+#Making Adjustments for clarity of plots
+data$weekend = ifelse(data$weekend == 'weekend', 'Yes', 'No')
+data$timestamp1 <- as.POSIXct(paste(data$timestamp), format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+
+#class(data)
+#head(data)
+#str(data)
+
+#Binning temperature ranges for clarity in plots
+numbers_of_bins = 10
+data<-data%>%mutate(Temperature_Range = cut(temperature, 
+                                     breaks = unique(quantile(temperature,probs=seq.int(0,1, by=1/numbers_of_bins))), 
+                                     include.lowest=TRUE))
+
+#make variables into factors
+data$timestamp = as.factor(data$timestamp)
+data$boarding = as.factor(data$boarding)
+data$alighting = as.factor(data$alighting)
+data$day_of_week = as.factor(data$day_of_week)
+data$temperature = as.factor(data$temperature)
+data$hour_of_day = as.factor(data$hour_of_day)
+data$month = as.factor(data$month)
+data$weekend = as.factor(data$weekend)
+```
+
+```{r echo=FALSE}
+#-------------------------FIRST SET OF SCATTER PLOTS----------------------------------
+p1 = ggplot(data, aes(timestamp1, boarding, color = weekend)) + geom_point() + 
+  theme(axis.text.y=element_blank()) + 
+  ggtitle("Boarding vs timestamp") + theme(plot.title = element_text(hjust = 0.5)) + 
+  scale_x_datetime(date_breaks = "2 week", date_labels = "%D") +
+  xlab("Date") + ylab('Number of people Boarding')
+p2 = ggplot(data, aes(timestamp1, alighting, color = weekend)) + geom_point() + 
+  theme(axis.text.y=element_blank()) + 
+  ggtitle("Alighting vs timestamp") + theme(plot.title = element_text(hjust = 0.5)) + 
+  scale_x_datetime(date_breaks = "2 week", date_labels = "%D") +
+  xlab("Date") + ylab('Number of people Boarding')
+
+p1.1 = ggplot(data[data$month %in% "Nov", ], aes(timestamp1, boarding, color = weekend)) + geom_point() + 
+  theme(axis.text.y=element_blank()) + 
+  ggtitle("Boarding vs timestamp for the month of November") + theme(plot.title = element_text(hjust = 0.5)) + 
+  scale_x_datetime(date_breaks = "1 week", date_labels = "%D") +
+  xlab("Date") + ylab('Number of people Boarding')
+
+p2.1 = ggplot(data[data$month %in% "Nov", ], aes(timestamp1, alighting, color = weekend)) + geom_point() + 
+  theme(axis.text.y=element_blank()) + 
+  ggtitle("Alighting vs timestamp for the month of November") + theme(plot.title = element_text(hjust = 0.5)) + 
+  scale_x_datetime(date_breaks = "1 week", date_labels = "%D") +
+  xlab("Date") + ylab('Number of people Alighting')
+
+#-------------------------SECOND SET OF SCATTER PLOTS----------------------------------
+
+p3 = ggplot(data[data$month %in% "Sep", ], aes(alighting,temperature, color = Temperature_Range)) + 
+  geom_point() + theme(axis.text.x=element_blank(),axis.text.y=element_blank()) + 
+  ggtitle("Alighting vs Temperature for September") + theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Number of People Alighting") + ylab('Temperature')
+p4 = ggplot(data[data$month %in% "Oct", ], aes(alighting,temperature, color = Temperature_Range)) + 
+  geom_point() + theme(axis.text.x=element_blank(),axis.text.y=element_blank())+ 
+  ggtitle("Alighting vs Temperature for October") + theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Number of People Alighting") + ylab('Temperature')
+p5 = ggplot(data[data$month %in% "Nov", ], aes(alighting,temperature, color = Temperature_Range)) + 
+  geom_point() + theme(axis.text.x=element_blank(),axis.text.y=element_blank())+ 
+  ggtitle("Alighting vs Temperature for November") + theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Number of People Alighting") + ylab('Temperature') 
+
+#-------------------------THIRD SET OF SCATTER PLOTS----------------------------------
+
+p6 = ggplot(data[data$month %in% "Sep", ], aes(boarding,temperature, color = Temperature_Range)) + 
+  geom_point() + theme(axis.text.x=element_blank(),axis.text.y=element_blank()) + 
+  ggtitle("Boarding vs Temperature for September") + theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Number of People Boarding") + ylab('Temperature')
+p7 = ggplot(data[data$month %in% "Oct", ], aes(boarding,temperature, color = Temperature_Range)) + 
+  geom_point() + theme(axis.text.x=element_blank(),axis.text.y=element_blank()) + 
+  ggtitle("Boarding vs Temperature for October") + theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Number of People Boarding") + ylab('Temperature')
+p8 = ggplot(data[data$month %in% "Nov", ], aes(boarding,temperature, color = Temperature_Range)) + 
+  geom_point() + theme(axis.text.x=element_blank(),axis.text.y=element_blank()) + 
+  ggtitle("Boarding vs Temperature for November") + theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Number of People Boarding") + ylab('Temperature')
+```
+
+```{r echo=FALSE}
+p1 + p2 + plot_layout(nrow = 2)
+```
+
+Boarding and alighting patterns over entire timeframe, with weekend indicator
+
+```{r echo=FALSE}
+p1.1 + p2.1 + plot_layout(nrow = 2)
+```
+
+Boarding and alighting patterns for the month of Novenmber, with weekend indicator. Note the slow down in the
+second to last week of the month
+
+```{r echo=FALSE}
+p3
+```
+
+Number of people alighting per 15 minutue interval vs temperature range for the month of September, 
+with color indicated by temperature range bucket the point falls into
+
+```{r echo=FALSE}
+p4
+```
+
+Number of people alighting per 15 minutue interval vs temperature range for the month of October,
+with color indicated by temperature range bucket the point falls into
+
+```{r echo=FALSE}
+p5
+```
+
+Number of people alighting per 15 minutue interval vs temperature range for the month of November, 
+with color indicated by temperature range bucket the point falls into
+
+
+```{r echo=FALSE}
+p6
+```
+
+Number of people boarding per 15 minutue interval vs temperature range for the month of September, 
+with color indicated by temperature range bucket the point falls into
+
+```{r echo=FALSE}
+p7
+```
+
+Number of people boarding per 15 minutue interval vs temperature range for the month of October,
+with color indicated by temperature range bucket the point falls into
+
+```{r echo=FALSE}
+p8
+```
+
+Number of people boarding per 15 minutue interval vs temperature range for the month of November, 
+with color indicated by temperature range bucket the point falls into
+
+```{r echo=FALSE}
+
+#-------------------------BAR PLOTS----------------------------------
+
+#getting sums
+data1 = data %>% group_by(Temperature_Range) %>% summarize(sum(as.numeric(boarding)))
+data1 = rename(data1, 'sums' = 'sum(as.numeric(boarding))')
+
+#plotting sums
+p9 = ggplot(data1, aes(Temperature_Range, sums))+ geom_col(aes(fill  = Temperature_Range),show.legend = FALSE)+ 
+  ggtitle("Boarding Counts for Temperature Range bins, for entire dataset") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Temperature Range (F)") + ylab('Number of people Boarding')
+
+#getting sums
+data2 = data  %>% group_by(Temperature_Range) %>% summarize(sum(as.numeric(alighting)))
+data2 = rename(data2, 'sums' = 'sum(as.numeric(alighting))')
+
+#plotting sums
+p10 = ggplot(data2, aes(Temperature_Range, sums))+ geom_col(aes(fill  = Temperature_Range),show.legend = FALSE)+ 
+  ggtitle("Alighting Counts for Temperature Range bins, for entire dataset") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Temperature Range (F)") + ylab('Number of people Alighting')
+```
+
+```{r echo=FALSE}
+p9
+```
+
+Bar plot showing aggregate boarding counts for entire timeframe based on temperature range bucket 
+
+```{r echo=FALSE}
+p10
+```
+
+Bar plot showing aggregate alighting counts for entire timeframe based on temperature range bucket 
+
+
+
+## Portfolio Modeling 
+```{r}
+library(mosaic)
+library(quantmod)
+library(foreach)
+mystocks = c( "SPLV", "VDE","USMV")
+myprices = getSymbols(mystocks, from = "2017-08-14")
+for(ticker in mystocks) {
+	expr = paste0(ticker, "a = adjustOHLC(", ticker, ")")
+	eval(parse(text=expr))
+}
+# Combine all the returns in a matrix
+all_returns = cbind( ClCl(SPLVa),
+								ClCl(USMVa),
+								ClCl(VDEa))
+head(all_returns)
+all_returns = as.matrix(na.omit(all_returns))
+# Compute the returns from the closing prices
+pairs(all_returns)
+# Sample a random return from the empirical joint distribution
+# This simulates a random day
+return.today = resample(all_returns, 1, orig.ids=FALSE)
+# Update the value of your holdings
+# Assumes an equal allocation to each asset
+total_wealth = 100000
+my_weights = c(0.25,0.25,0.5)
+holdings = total_wealth*my_weights
+holdings = holdings*(1 + return.today)
+# Compute your new total wealth
+holdings
+total_wealth = sum(holdings)
+total_wealth
+# Now loop over a 20 day period
+## begin block
+total_wealth = 100000
+weights = c(0.25,0.25,0.5)
+holdings = weights * total_wealth
+n_days = 20  # capital T in the notes
+wealthtracker = rep(0, n_days) # Set up a placeholder to track total wealth
+for(today in 1:n_days) {
+	return.today = resample(all_returns, 1, orig.ids=FALSE)  # sampling from R matrix in notes
+	holdings = holdings + holdings*return.today
+	total_wealth = sum(holdings)
+	wealthtracker[today] = total_wealth
+}
+total_wealth
+plot(wealthtracker, type='l')
+## end block
+# Now simulate many different possible futures
+# just repeating the above block thousands of times
+initial_wealth = 100000
+sim1 = foreach(i=1:5000, .combine='rbind') %do% {
+	total_wealth = initial_wealth
+	weights = c(0.25,0.25,0.5)
+	holdings = weights * total_wealth
+	n_days = 10
+	wealthtracker = rep(0, n_days)
+	for(today in 1:n_days) {
+		return.today = resample(all_returns, 1, orig.ids=FALSE)
+		holdings = holdings + holdings*return.today
+		total_wealth = sum(holdings)
+		wealthtracker[today] = total_wealth
+	}
+	wealthtracker
+}
+# each row is a simulated trajectory
+# each column is a data
+head(sim1)
+hist(sim1[,n_days], 25)
+# Profit/loss
+mean(sim1[,n_days])
+mean(sim1[,n_days] - initial_wealth)
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+# 5% value at risk:
+quantile(sim1[,n_days]- initial_wealth, prob=.05)
+```
+
+In this portfolio, We have 3 ETFS. We  half our portfolio USMV which tracks equities that in the past have had a lower risk in the past. We also have 1/4 of our portfolio in an energy ETF VDE. We have the final quarter of our portfolio in SPLV another low volatility index. This is our most conservative option with a very low risk and only a 5% chance of losing 6000 dollars in any 20 day period. 
+
+```{r}
+mystocks = c( "VOO", "QQQ","TQQQ")
+myprices = getSymbols(mystocks, from = "2017-08-14")
+for(ticker in mystocks) {
+	expr = paste0(ticker, "a = adjustOHLC(", ticker, ")")
+	eval(parse(text=expr))
+}
+# Combine all the returns in a matrix
+all_returns = cbind( ClCl(VOOa),
+								ClCl(QQQ),
+								ClCl(TQQQa))
+head(all_returns)
+all_returns = as.matrix(na.omit(all_returns))
+# Compute the returns from the closing prices
+pairs(all_returns)
+# Sample a random return from the empirical joint distribution
+# This simulates a random day
+return.today = resample(all_returns, 1, orig.ids=FALSE)
+# Update the value of your holdings
+# Assumes an equal allocation to each asset
+total_wealth = 100000
+my_weights = c(0.3,0.3,.4)
+holdings = total_wealth*my_weights
+holdings = holdings*(1 + return.today)
+# Compute your new total wealth
+holdings
+total_wealth = sum(holdings)
+total_wealth
+# Now loop over a 20 day period
+## begin block
+total_wealth = 100000
+weights = c(0.3,0.4,.3)
+holdings = weights * total_wealth
+n_days = 20  # capital T in the notes
+wealthtracker = rep(0, n_days) # Set up a placeholder to track total wealth
+for(today in 1:n_days) {
+	return.today = resample(all_returns, 1, orig.ids=FALSE)  # sampling from R matrix in notes
+	holdings = holdings + holdings*return.today
+	total_wealth = sum(holdings)
+	wealthtracker[today] = total_wealth
+}
+total_wealth
+plot(wealthtracker, type='l')
+## end block
+# Now simulate many different possible futures
+# just repeating the above block thousands of times
+initial_wealth = 100000
+sim1 = foreach(i=1:5000, .combine='rbind') %do% {
+	total_wealth = initial_wealth
+	weights =c(0.3,0.4,.3)
+	holdings = weights * total_wealth
+	n_days = 10
+	wealthtracker = rep(0, n_days)
+	for(today in 1:n_days) {
+		return.today = resample(all_returns, 1, orig.ids=FALSE)
+		holdings = holdings + holdings*return.today
+		total_wealth = sum(holdings)
+		wealthtracker[today] = total_wealth
+	}
+	wealthtracker
+}
+# each row is a simulated trajectory
+# each column is a data
+head(sim1)
+hist(sim1[,n_days], 25)
+# Profit/loss
+mean(sim1[,n_days])
+mean(sim1[,n_days] - initial_wealth)
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+# 5% value at risk:
+quantile(sim1[,n_days]- initial_wealth, prob=.05)
+```
+In this portfolio, We have 3 ETFS. We  30% our portfolio VOO which tracks The S&P 500. We also have 40% of our portfolio in QQQ which also tracks the S&P 500. We have the 30% of our portfolio in TQQQ, this is a leveraged index of the S&P 500 meaning that all gains and losses are 3x. This is our most Aggressive option as we our betting heavily on companies in the S&P 500 and have a  5% chance of losing 11000 dollars in any 20 day period. 
+
+
+```{r}
+mystocks = c( "AOR", "VDE","XLE")
+myprices = getSymbols(mystocks, from = "2017-08-14")
+for(ticker in mystocks) {
+	expr = paste0(ticker, "a = adjustOHLC(", ticker, ")")
+	eval(parse(text=expr))
+}
+# Combine all the returns in a matrix
+all_returns = cbind( ClCl(AORa),
+								ClCl(VDEa),
+								ClCl(XLEa))
+head(all_returns)
+all_returns = as.matrix(na.omit(all_returns))
+# Compute the returns from the closing prices
+pairs(all_returns)
+# Sample a random return from the empirical joint distribution
+# This simulates a random day
+return.today = resample(all_returns, 1, orig.ids=FALSE)
+# Update the value of your holdings
+# Assumes an equal allocation to each asset
+total_wealth = 100000
+my_weights = c(0.3,0.3,.4)
+holdings = total_wealth*my_weights
+holdings = holdings*(1 + return.today)
+# Compute your new total wealth
+holdings
+total_wealth = sum(holdings)
+total_wealth
+# Now loop over a 20 day period
+## begin block
+total_wealth = 100000
+weights = c(0.3,0.4,.3)
+holdings = weights * total_wealth
+n_days = 20  # capital T in the notes
+wealthtracker = rep(0, n_days) # Set up a placeholder to track total wealth
+for(today in 1:n_days) {
+	return.today = resample(all_returns, 1, orig.ids=FALSE)  # sampling from R matrix in notes
+	holdings = holdings + holdings*return.today
+	total_wealth = sum(holdings)
+	wealthtracker[today] = total_wealth
+}
+total_wealth
+plot(wealthtracker, type='l')
+## end block
+# Now simulate many different possible futures
+# just repeating the above block thousands of times
+initial_wealth = 100000
+sim1 = foreach(i=1:5000, .combine='rbind') %do% {
+	total_wealth = initial_wealth
+	weights =c(0.3,0.4,.3)
+	holdings = weights * total_wealth
+	n_days = 10
+	wealthtracker = rep(0, n_days)
+	for(today in 1:n_days) {
+		return.today = resample(all_returns, 1, orig.ids=FALSE)
+		holdings = holdings + holdings*return.today
+		total_wealth = sum(holdings)
+		wealthtracker[today] = total_wealth
+	}
+	wealthtracker
+}
+# each row is a simulated trajectory
+# each column is a data
+head(sim1)
+hist(sim1[,n_days], 25)
+# Profit/loss
+mean(sim1[,n_days])
+mean(sim1[,n_days] - initial_wealth)
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+# 5% value at risk:
+quantile(sim1[,n_days]- initial_wealth, prob=.05)
+```
+In this portfolio, We have 3 ETFS. We 30% our portfolio AOR which tracks equities that are in the growth sector. We also have 40% of our portfolio in an energy ETF VDE. We have the final 40% our portfolio in XLE another energy index. This is our middle of the road option with higher risk as we bet heavily on energy a market that has been steady for 100+ years. We have a 5% chance of losing 8000 dollars in any 20 day period.  
+
+
+###############
+#PCA
+
+
+```{r}
+library(readr)
+wine <- read_csv("./wine.csv")
+ind <- sample(2, nrow(wine),
+              replace = TRUE,
+              prob = c(0.8, 0.2))
+training <- wine[ind==1,]
+testing <- wine[ind==2,]
+wine
+wine.pca <- prcomp(training[,c(1:12)], center = TRUE,scale. = TRUE)
+summary(wine.pca)
+wine
+wine.pca$rotation <- -1*wine.pca$rotation
+wine.pca$rotation
+biplot(wine.pca, scale = 0)
+trg <- predict(wine.pca, training)
+trg <- data.frame(trg, training[13])
+tst <- predict(wine.pca, testing)
+tst <- data.frame(tst, testing[13])
+library(nnet)
+mymodel <- multinom(color~PC1+PC2, data = trg)
+summary(mymodel)
+p <- predict(mymodel, trg)
+tab <- table(p, trg$color)
+tab
+p1 <- predict(mymodel, tst)
+tab1 <- table(p1, tst$color)
+tab1
+# 1 % misclassification rate
+```
+
+#clustering 
+
+```{r}
+wine_2 = wine[-13]
+# Center/scale the data
+wine_2 %>% na.omit(wine_2)
+wine_scaled = scale(wine_2, center=TRUE, scale=TRUE) 
+# Form a pairwise distance matrix using the dist function
+wine_distance_matrix = dist(wine_scaled, method='euclidean')
+# Now run hierarchical clustering
+hier_wine = hclust(wine_distance_matrix, method='average')
+# Plot the dendrogram
+plot(hier_wine, cex=0.8)
+# Cut the tree into 5 clusters
+cluster1 = cutree(hier_wine, k=2)
+summary(factor(cluster1))
+
+# Using max ("complete") linkage instead
+hier_protein2 = hclust(wine_distance_matrix, method='complete')
+# Plot the dendrogram
+plot(hier_protein2, cex=0.8)
+cluster2 = cutree(hier_protein2, k=5)
+summary(factor(cluster2))
+
+```
+After running both PCA and Clustering, it was aparent that PCA was the much more effective model. The heirarchal clustering values were not good This is because the values of the red and white wine were so close together that there simply was not a large enough difference in the data to effectively tell which wine was which However, in the PCA we ran could not have gone much better we were able to take the 13 variables down to 2 variables which we were able to plot against each other. This gave us a confusion matrix with 99% accuracy meaning that only a few wines were incorrectly placed in the wrong category. PCA was able to take these differences and reduce the number of variables allowing us to make us to make a very strong prediction about the type of wine. 
+
+
+
+#Market Segmentation 
+
+
+###Pre-Processing and First Correlation plot 
+```{r}
+library(readr)
+soc <- read_csv("./social_marketing.csv")
+soc <-soc[-1]
+d2 <- soc %>% 
+  as.matrix %>%
+  cor %>%
+  as.data.frame 
+mydata.cor = cor(soc, method = c("spearman"))
+#install.packages("corrplot")
+library(corrplot)
+corr_simple <- function(data=d2,sig=0.3){
+  #convert data to numeric in order to run correlations
+  #convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA
+  df_cor <- data %>% mutate_if(is.character, as.factor)
+  df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
+  #run a correlation and drop the insignificant ones
+  corr <- cor(df_cor)
+  #prepare to drop duplicates and correlations of 1     
+  corr[lower.tri(corr,diag=TRUE)] <- NA 
+  #drop perfect correlations
+  corr[corr == 1] <- NA 
+  #turn into a 3-column table
+  corr <- as.data.frame(as.table(corr))
+  #remove the NA values from above 
+  corr <- na.omit(corr) 
+  #select significant values  
+  corr <- subset(corr, abs(Freq) > sig) 
+  #sort by highest correlation
+  corr <- corr[order(-abs(corr$Freq)),] 
+  #print table
+  print(corr)
+  #turn corr back into matrix in order to plot with corrplot
+  mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  
+  #plot correlations visually
+  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+}
+corr_simple()
+```
+
+
+### Second and third correlation plots along with data frames
+```{r}
+corr_simple2 <- function(data=d2,sig=0.5){
+  #convert data to numeric in order to run correlations
+  #convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA
+  df_cor <- data %>% mutate_if(is.character, as.factor)
+  df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
+  #run a correlation and drop the insignificant ones
+  corr <- cor(df_cor)
+  #prepare to drop duplicates and correlations of 1     
+  corr[lower.tri(corr,diag=TRUE)] <- NA 
+  #drop perfect correlations
+  corr[corr == 1] <- NA 
+  #turn into a 3-column table
+  corr <- as.data.frame(as.table(corr))
+  #remove the NA values from above 
+  corr <- na.omit(corr) 
+  #select significant values  
+  corr <- subset(corr, abs(Freq) > sig) 
+  #sort by highest correlation
+  corr <- corr[order(-abs(corr$Freq)),] 
+  #print table
+  print(corr)
+  #turn corr back into matrix in order to plot with corrplot
+  mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  
+  #plot correlations visually
+  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+}
+corr_simple2()
+corr_simple3 <- function(data=d2,sig=0.7){
+  #convert data to numeric in order to run correlations
+  #convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA
+  df_cor <- data %>% mutate_if(is.character, as.factor)
+  df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
+  #run a correlation and drop the insignificant ones
+  corr <- cor(df_cor)
+  #prepare to drop duplicates and correlations of 1     
+  corr[lower.tri(corr,diag=TRUE)] <- NA 
+  #drop perfect correlations
+  corr[corr == 1] <- NA 
+  #turn into a 3-column table
+  corr <- as.data.frame(as.table(corr))
+  #remove the NA values from above 
+  corr <- na.omit(corr) 
+  #select significant values  
+  corr <- subset(corr, abs(Freq) > sig) 
+  #sort by highest correlation
+  corr <- corr[order(-abs(corr$Freq)),] 
+  #print table
+  print(corr)
+  j <- corr %>% group_by(Var1,Var2) %>% count()
+  print(j)
+  #turn corr back into matrix in order to plot with corrplot
+  mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  
+  #plot correlations visually
+  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+}
+corr_simple3()
+```
+
+
+
+#PCA and clustering analysis along with network graph 
+```{r}
+# this gives us a good idea of what people looked at together 
+soc
+soc.pca <- prcomp(na.omit(soc),center = T,scale. = T)
+summary(soc.pca)
+soc
+soc.pca$rotation <- -1*soc.pca$rotation
+pr_var <-  soc.pca$sdev ^ 2
+pve <- pr_var / sum(pr_var)
+plot(pve, xlab = "Principal Component", ylab = "Proportion of Variance Explained", ylim = c(0,1), type = 'b')
+plot(cumsum(pve), xlab = "Principal Component", ylab = "Cumulative Proportion of Variance Explained", ylim =c(0,1), type = 'b')
+biplot(soc.pca, scale = 0)
+#install.packages('factoextra')
+library(factoextra)
+soc.pca$sdev
+soc_transform = as.data.frame(-soc.pca$x[,1:36])
+k = 9
+fviz_nbclust(soc_transform, kmeans, method = 'wss')
+kmeans_soc = kmeans(soc_transform, centers = k, nstart = 50)
+fviz_cluster(kmeans_soc, data = soc_transform,pointsize = 1,labelsize = 1)
+library(igraph)
+soc_mat <- as.matrix(soc)
+soc_graph<- soc[1:100,]
+soc_mat <- as.matrix(soc_graph)
+library(Matrix)
+mydata.cor = cor(soc, method = c("spearman"))
+mydata.cor<- as.matrix(mydata.cor)
+# takes out the weak correlations
+mydata.cor[mydata.cor<abs(.25)] <- 0
+#creates a network graph 
+network<-  graph_from_adjacency_matrix(mydata.cor, mode="undirected", diag=F,weighted = T,add.rownames = T)
+plot(network,vertex.label.cex=.35,edge.color=rep(c("red","pink"),5),edge.width=4,layout = layout.fruchterman.reingold(network),Title = 'Network graph')
+soc2 <- soc %>% select(sports_fandom,family,food,school,shopping,travel,health_nutrition,personal_fitness)
+soc2.pca <- prcomp(soc2,center = T,scale. = T)
+summary(soc2.pca)
+soc2.pca$rotation <- -1*soc.pca$rotation
+soc_transform = as.data.frame(-soc2.pca$x[,1:7])
+k = 4
+fviz_nbclust(soc_transform, kmeans, method = 'wss')
+kmeans_soc = kmeans(soc_transform, centers = k, nstart = 50)
+fviz_cluster(kmeans_soc, data = soc_transform,pointsize = 1,labelsize = 1)
+```
+#conclusion 
+Using the Market Segmentation data our task is to find trends in what people are looking at to try and figure how to more effectively market at all of our customers. The place I first wanted to start was looking at some correlation matrices. These matrices will help us see which categories are highly correlated with one another. This will help us get an idea of what categories people looked at together. The functions I used created a table with the relative correlation values. I had 3 different matrices each one getting more selective than the last. The first Matrix included all correlations with .3 or higher, this means even weak correlations were included. This matrix was hard to read and did not provide us with any valuable information. However, moving up the ladder and making removing the weaker correlation eventually up to .75 provides us with a much clearer picture. These correlations provide a good base on how the categories interact with one another. I wanted to use PCA to reduce the dimensions of my data set but after running it, it simply did not paint a clear picture of different groups. This can be seen in my cluster plot I created.  However, using some of the highly correlated categories. Using these categories I ran another PCA this PCA heeded better results but still not great. Finally I created a network graph to show how some of the correlations related to one another. This helps us see which categories can be advertised to the most wide range of categories. I think this was the most helpful insight from my analysis. Sometimes unsupervised learning isn't the best choice and until I figure out what to do with the parameters to make them more understandable, I believe the best way to look at marketing would be to find the correlations and just make ad suggestions based on those with high correlations. 
+
+#Reuters Corpus -Aaron Pressman 
+
+```{r}
+library(tm) 
+library(tidyverse)
+library(slam)
+library(proxy)
+readerPlain = function(fname){
+    readPlain(elem=list(content=readLines(fname)), 
+              id=fname, language='en') }
+file_list = Sys.glob('C:/Users/chama/OneDrive/Documents/SUMMER 2022/Machine Learning/2nd half/Project/ReutersC50/C50train/AaronPressman/*.txt')
+aaron = lapply(file_list, readerPlain) 
+file_list
+mynames = file_list %>%
+    { strsplit(., '/', fixed=TRUE) } %>%
+    { lapply(., tail, n=2) } %>%
+    { lapply(., paste0, collapse = '') } %>%
+    unlist
+# Rename the articles 
+mynames
+names(aaron) = mynames
+## once you have documents in a vector, you 
+## create a text mining 'corpus' with: 
+documents_raw = Corpus(VectorSource(aaron))
+## Some pre-processing/tokenization steps.
+## tm_map just maps some function to every document in the corpus
+my_documents = documents_raw
+my_documents = tm_map(my_documents, content_transformer(tolower)) # make everything lowercase
+my_documents = tm_map(my_documents, content_transformer(removeNumbers)) # remove numbers
+my_documents = tm_map(my_documents, content_transformer(removePunctuation)) # remove punctuation
+my_documents = tm_map(my_documents, content_transformer(stripWhitespace)) ## remove excess white-space
+## Remove stopwords.  Always be careful with this!
+stopwords("en")
+stopwords("SMART")
+my_documents = tm_map(my_documents, content_transformer(removeWords), stopwords("en"))
+## create a doc-term-matrix
+DTM_aaron = DocumentTermMatrix(my_documents)
+DTM_aaron # some basic summary statistics
+class(DTM_aaron)  # a special kind of sparse matrix format
+## You can inspect its entries...
+## ...find words with greater than a min count...
+findFreqTerms(DTM_aaron, 50)
+## ...or find words whose count correlates with a specified word.
+findAssocs(DTM_aaron, "banks", .5) 
+## Drop those terms that only occur in one or two documents
+## This is a common step: the noise of the "long tail" (rare terms)
+##	can be huge, and there is nothing to learn if a term occurred once.
+## Below removes those terms that have count 0 in >95% of docs.  
+## Probably a bit extreme in most cases... but here only 50 docs!
+DTM_aaron = removeSparseTerms(DTM_aaron, 0.95)
+DTM_aaron # now ~ 1000 terms (versus ~3000 before)
+# construct TF IDF weights
+tfidf_aaron = weightTfIdf(DTM_aaron)
+####
+# Compare documents
+####
+# could go back to the raw corpus
+####
+# Dimensionality reduction
+####
+# Now PCA on term frequencies
+X = as.matrix(tfidf_aaron)
+summary(colSums(X))
+scrub_cols = which(colSums(X) == 0)
+X = X[,-scrub_cols]
+pca_aaron = prcomp(X, rank=2, scale=TRUE)
+plot(pca_aaron) 
+# Look at the loadings
+pca_aaron$rotation[order(abs(pca_aaron$rotation[,1]),decreasing=TRUE),1][1:25]
+pca_aaron$rotation[order(abs(pca_aaron$rotation[,2]),decreasing=TRUE),2][1:25]
+## Look at the first two PCs..
+# We've now turned each document into a single pair of numbers -- massive dimensionality reduction
+pca_aaron$x[,1:2]
+plot(pca_aaron$x[,1:2], xlab="PCA 1 direction", ylab="PCA 2 direction", bty="n",
+     type='n', )
+text(pca_aaron$x[,1:2], labels = 1:length(aaron), cex=1)
+# all about the federal reserve 
+content(aaron[[25]])
+content(aaron[[20]])
+content(aaron[[24]])
+# IPapers about banking and technology intersection. 
+content(aaron[[39]])
+content(aaron[[43]])
+content(aaron[[34]])
+### Papers about strictly Technology 
+content(aaron[[44]])
+content(aaron[[45]])
+#####
+# Cluster documents
+#####
+# define the distance matrix
+# using the PCA scores
+dist_mat = dist(pca_aaron$x)
+tree_aaron = hclust(dist_mat)
+plot(tree_aaron)
+clust5 = cutree(tree_aaron, k=5)
+# inspect the clusters
+which(clust5 == 3)
+```
+For the reuters corpus text analysis problem, we decided to take a deeper dive into a particularly successful New York Times corpus fortune senior writer, Aaron Pressman. After his successful career reporting at Business Week, The Industry Standard, and Bloomberg, and his SABEW “Best in Business Award”, our group was interested in further investigating where Pressman’s passions lie within the reporting industry. We wanted to specifically analyze what Pressman’s works look like on a deeper level, aling with these areas that have made him so successful in the writing industry. We decided to take a similar approach to that of class in order to further investigate Pressman’s works and career. The file includes data relating to the New York Times annotated Corpus with text included of articles written by NYT authors.
+
+In this analysis, we found out information on what Aaron Pressman was writing about, Aaron pressman wrote about a few topics mostly in the Banking and Technology we used principal components analysis to take down the number of variables to only two single variables. This was surprisingly good at taking the overall meaning of his papers. This was seen in the analysis of the content of each of the papers. A couple were strictly banking, most were a mix, and finally some were just tech. Using PCA is a great way to find out the overall meaning of a large set of documents. 
+
+
+
+# Association rule mining
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(igraph)
+library(arules)  # has a big ecosystem of packages built around it
+library(arulesViz)
+```
+
+```{r}
+groceries <- read.transactions(file="groceries.txt",sep = ',',format="basket",rm.duplicates=TRUE)
+summary(groceries)
+groc_trans = as(groceries, "transactions")
+summary(groc_trans)
+itemFrequencyPlot(groc_trans, topN = 20)
+```
+
+Some Initial findings:
+There are total of 9835 transactions in our dataset. Whole milk is the most frequent item bought by shoppers, followed by other vegetables, then rolls & buns.
+
+
+```{r}
+groc_rules <- apriori(groc_trans, 
+                     parameter=list(support=.001, confidence=0.6, maxlen=4)) # rules
+#arules::inspect(groc_rules) 
+#arules::inspect(subset(groc_rules, subset=lift > 4))
+#arules::inspect(subset(groc_rules, subset=support > 0.002))
+#arules::inspect(subset(groc_rules, subset=lift > 5 & confidence > 0.8))
+plot(groc_rules)
+```
+
+Look at the output... so many rules!
+There are 2142 rules generated with support at .001, confidence at .6, and max length at 4. 
+I set support=0.001 meaning the RHS appear to be in at least 0.1% of the baskets.
+I set confidence=0.6 meaning the RHS will be purchased given LHS were purchased 60% of the times.
+I set length=4 because our grocery baskets have maximum of 4 items. 
+Then I took different subsets. Increasing lift, support, and confidence will all reduce the number of rules. This makes sense because not all rules have high accuracy, occurrence, or impact. 
+
+
+```{r}
+plot(groc_rules, measure = c("support", "lift"), shading = "confidence")
+plot(groc_rules, method='two-key plot')
+```
+
+Plot all the rules in (support, confidence) space: we notice that high lift rules tend to have low support.This makes sense intuitively because lift is a fraction of confidence over support.
+From the two key graph: The more items a rule include, the lower support but higher confidence that rule will have. This makes sense intuitively. 
+
+
+```{r}
+groc_graph = associations2igraph(subset(groc_rules, lift>4), associationsAsNodes = FALSE)
+igraph::write_graph(groc_graph, file='grocery.graphml', format = "graphml")
+```
+
+In the last step I opened the graph in Gephi:
+From the association graph from Gephi, we can see some of the clustering of associations. For example, Gephi1 shows the beverage purchase community; Gephi2 shows the veggie/fruit purchase community 
+In Gephi3, we can see Root Veggie, Yogurt, Tropical Fruit are nodes with big centers.They are more  prevalent in association rule mappings. It means that these products  are put in the basket often in combination with of other different products. 
 
