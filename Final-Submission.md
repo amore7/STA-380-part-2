@@ -230,4 +230,58 @@ then make additional revenue from then on.
 
 ## Visual story telling part 2: Capital Metro data
 
-![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-1.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-2.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-3.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-4.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-5.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-6.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-7.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-8.png)
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-1.png)
+
+Boarding and alighting patterns over entire timeframe, with weekend
+indicator
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-19-1.png)
+
+Boarding and alighting patterns for the month of Novenmber, with weekend
+indicator. Note the slow down in the second to last week of the month
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-20-1.png)
+
+Number of people alighting per 15 minutue interval vs temperature range
+for the month of September, with color indicated by temperature range
+bucket the point falls into
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-21-1.png)
+
+Number of people alighting per 15 minutue interval vs temperature range
+for the month of October, with color indicated by temperature range
+bucket the point falls into
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-22-1.png)
+
+Number of people alighting per 15 minutue interval vs temperature range
+for the month of November, with color indicated by temperature range
+bucket the point falls into
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-23-1.png)
+
+Number of people boarding per 15 minutue interval vs temperature range
+for the month of September, with color indicated by temperature range
+bucket the point falls into
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-24-1.png)
+
+Number of people boarding per 15 minutue interval vs temperature range
+for the month of October, with color indicated by temperature range
+bucket the point falls into
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-25-1.png)
+
+Number of people boarding per 15 minutue interval vs temperature range
+for the month of November, with color indicated by temperature range
+bucket the point falls into
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-27-1.png)
+
+Bar plot showing aggregate boarding counts for entire timeframe based on
+temperature range bucket
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-28-1.png)
+
+Bar plot showing aggregate alighting counts for entire timeframe based
+on temperature range bucket
