@@ -1,0 +1,13 @@
+---
+title: 'STA 380, Part 2: Exercises'
+author: "Anthony Moreno, Mark Moreno, Kai Zhang"
+date: '2022-08-15'
+output: md_document
+---
+
+## **STA 380, Part 2: Exercises**
+
+## Probability Practice
+### **Part a**
+
+

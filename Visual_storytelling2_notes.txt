@@ -1,0 +1,32 @@
+P1 + P2:
+Boarding and alighting patterns over entire timeframe, with weekend indicator
+P1.1 + P2.1:
+Boarding and alighting patterns for the month of Novenmber, with weekend indicator. Note the slow down in the
+second to last week of the month
+
+P3:
+Number of people alighting per 15 minutue interval vs temperature range for the month of September, 
+with color indicated by temperature range bucket the point falls into
+P4:
+Number of people alighting per 15 minutue interval vs temperature range for the month of October,
+with color indicated by temperature range bucket the point falls into
+P5:
+Number of people alighting per 15 minutue interval vs temperature range for the month of November, 
+with color indicated by temperature range bucket the point falls into
+
+
+P6:
+Number of people boarding per 15 minutue interval vs temperature range for the month of September, 
+with color indicated by temperature range bucket the point falls into
+P7:
+Number of people boarding per 15 minutue interval vs temperature range for the month of October,
+with color indicated by temperature range bucket the point falls into
+P8:
+Number of people boarding per 15 minutue interval vs temperature range for the month of November, 
+with color indicated by temperature range bucket the point falls into
+
+P9:
+Bar plot showing aggregate boarding counts for entire timeframe based on temperature range bucket 
+
+P10:
+Bar plot showing aggregate alighting counts for entire timeframe based on temperature range bucket 
