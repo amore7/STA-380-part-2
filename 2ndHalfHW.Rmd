@@ -1,0 +1,147 @@
+---
+title: "Machine Learning 2nd Half HW"
+author: "Kai Zhang"
+date: "2022-08-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\tableofcontents
+
+\clearpage
+
+# Probability Practice
+
+```{r , echo=FALSE, out.width = '90%'}
+knitr::include_graphics("PartA.jpeg")
+```
+
+```{r pressure, echo=FALSE, out.width = '90%'}
+knitr::include_graphics("PartB.jpeg")
+```
+
+
+
+# Wrangling the Billboard Top 100
+### Part A
+```{r, echo=FALSE}
+library('dplyr')
+billboard<-read.csv('billboard.csv')
+top_10 = billboard %>% 
+  group_by(song, performer) %>% 
+  summarize(count = n())%>%
+            arrange(desc(count))
+
+head(top_10,10)
+
+```
+
+### Part B
+
+
+```{r,echo=FALSE}
+library(ggplot2)
+uniqueSong = billboard %>%
+  group_by(year) %>%
+  mutate(unique_song = n_distinct(song)) %>%
+  filter((!duplicated(year)) & (year != 1958) & (year != 2021))%>%
+  select(year,unique_song) %>%
+    arrange(year)
+ggplot(data = uniqueSong,aes(x=year, y=unique_song))+
+  geom_line()+
+  geom_point()+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))+
+   labs(subtitle="Number of Unique Songs Appeared on Top 100 List Over Years")
+```
+
+### Music diversity declined starting from the 70. People seems to like the same music with less diversity from the 70s through mid 2000s. People's taste has become more diverse since then and has reached the diversity peak in mid 60s.
+
+
+### Part C
+
+```{r,echo=FALSE}
+
+ten_week_hit <- billboard %>%
+  group_by(song_id) %>% mutate(appearance = n())%>%
+  filter (appearance>=10)%>%
+  select(song_id,performer, appearance)%>%
+  group_by(performer)%>%
+  summarise(count = n_distinct(song_id))%>%
+  filter (count>=30)%>%
+  arrange(count)
+ten_week_hit
+ggplot(data=ten_week_hit, aes(x=performer, y=count)) +
+  geom_bar(stat="identity")+coord_flip()+
+     labs(subtitle="Performers with the most ten-week-hit songs")
+
+
+```
+
+
+
+
+# Association rule mining
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(igraph)
+library(arules)  # has a big ecosystem of packages built around it
+library(arulesViz)
+```
+
+```{r}
+groceries <- read.transactions(file="groceries.txt",sep = ',',format="basket",rm.duplicates=TRUE)
+summary(groceries)
+
+groc_trans = as(groceries, "transactions")
+summary(groc_trans)
+itemFrequencyPlot(groc_trans, topN = 20)
+```
+
+Some Initial findings:
+There are total of 9835 transactions in our dataset. Whole milk is the most frequent item bought by shoppers, followed by other vegetables, then rolls & buns.
+
+
+```{r}
+groc_rules <- apriori(groc_trans, 
+                     parameter=list(support=.001, confidence=0.6, maxlen=4)) # rules
+#arules::inspect(groc_rules) 
+#arules::inspect(subset(groc_rules, subset=lift > 4))
+#arules::inspect(subset(groc_rules, subset=support > 0.002))
+#arules::inspect(subset(groc_rules, subset=lift > 5 & confidence > 0.8))
+plot(groc_rules)
+```
+
+Look at the output... so many rules!
+There are 2142 rules generated with support at .001, confidence at .6, and max length at 4. 
+I set support=0.001 meaning the RHS appear to be in at least 0.1% of the baskets.
+I set confidence=0.6 meaning the RHS will be purchased given LHS were purchased 60% of the times.
+I set length=4 because our grocery baskets have maximum of 4 items. 
+Then I took different subsets. Increasing lift, support, and confidence will all reduce the number of rules. This makes sense because not all rules have high accuracy, occurrence, or impact. 
+
+
+```{r}
+plot(groc_rules, measure = c("support", "lift"), shading = "confidence")
+plot(groc_rules, method='two-key plot')
+```
+
+Plot all the rules in (support, confidence) space: we notice that high lift rules tend to have low support.This makes sense intuitively because lift is a fraction of confidence over support.
+From the two key graph: The more items a rule include, the lower support but higher confidence that rule will have. This makes sense intuitively. 
+
+
+```{r}
+groc_graph = associations2igraph(subset(groc_rules, lift>4), associationsAsNodes = FALSE)
+igraph::write_graph(groc_graph, file='grocery.graphml', format = "graphml")
+```
+
+In the last step I opened the graph in Gephi:
+From the association graph from Gephi, we can see some of the clustering of associations. For example, Gephi1 shows the beverage purchase community; Gephi2 shows the veggie/fruit purchase community 
+In Gephi3, we can see Root Veggie, Yogurt, Tropical Fruit are nodes with big centers.They are more  prevalent in association rule mappings. It means that these products  are put in the basket often in combination with of other different products. 
+
+
+
+
+
