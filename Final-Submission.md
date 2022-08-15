@@ -61,6 +61,11 @@ how this person described his process:
 
 ## Exploratory Data Analysis
 
+it may seem like the stats guru is on point with their analysis upon
+first glance when using the same assumption and removing the rows with
+occupancy rates lower than 10%, the green buildings still average $2.6
+dollars more per square foot.
+
     ## # A tibble: 2 × 3
     ##   green_rating med_rent count
     ##   <fct>           <dbl> <int>
@@ -68,3 +73,6 @@ how this person described his process:
     ## 2 1                27.6   684
 
 <img src="Final-Submission_files/figure-markdown_strict/unnamed-chunk-4-1.png" width="50%" />
+While looking at the box plot we see that the non-green buildings have a
+fair amount more outliers, which explains the guru’s reasoning for using
+the median as opposed to the mean
