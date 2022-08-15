@@ -1,0 +1,583 @@
+---
+title: "Final Exam Group Project"
+author: "Mark Moreno"
+date: "2022-08-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Portfolio Modeling 
+```{r}
+
+library(mosaic)
+library(quantmod)
+library(foreach)
+
+mystocks = c( "SPLV", "VDE","USMV")
+myprices = getSymbols(mystocks, from = "2017-08-14")
+
+
+
+for(ticker in mystocks) {
+	expr = paste0(ticker, "a = adjustOHLC(", ticker, ")")
+	eval(parse(text=expr))
+}
+
+head(VOOa)
+
+# Combine all the returns in a matrix
+all_returns = cbind( ClCl(SPLVa),
+								ClCl(USMVa),
+								ClCl(QQQa))
+head(all_returns)
+all_returns = as.matrix(na.omit(all_returns))
+
+# Compute the returns from the closing prices
+pairs(all_returns)
+
+# Sample a random return from the empirical joint distribution
+# This simulates a random day
+return.today = resample(all_returns, 1, orig.ids=FALSE)
+
+# Update the value of your holdings
+# Assumes an equal allocation to each asset
+total_wealth = 100000
+my_weights = c(0.25,0.25,0.5)
+holdings = total_wealth*my_weights
+holdings = holdings*(1 + return.today)
+
+# Compute your new total wealth
+holdings
+total_wealth = sum(holdings)
+total_wealth
+
+# Now loop over a 20 day period
+
+## begin block
+total_wealth = 100000
+weights = c(0.25,0.25,0.5)
+holdings = weights * total_wealth
+n_days = 20  # capital T in the notes
+wealthtracker = rep(0, n_days) # Set up a placeholder to track total wealth
+for(today in 1:n_days) {
+	return.today = resample(all_returns, 1, orig.ids=FALSE)  # sampling from R matrix in notes
+	holdings = holdings + holdings*return.today
+	total_wealth = sum(holdings)
+	wealthtracker[today] = total_wealth
+}
+total_wealth
+plot(wealthtracker, type='l')
+## end block
+
+# Now simulate many different possible futures
+# just repeating the above block thousands of times
+initial_wealth = 100000
+sim1 = foreach(i=1:5000, .combine='rbind') %do% {
+	total_wealth = initial_wealth
+	weights = c(0.25,0.25,0.5)
+	holdings = weights * total_wealth
+	n_days = 10
+	wealthtracker = rep(0, n_days)
+	for(today in 1:n_days) {
+		return.today = resample(all_returns, 1, orig.ids=FALSE)
+		holdings = holdings + holdings*return.today
+		total_wealth = sum(holdings)
+		wealthtracker[today] = total_wealth
+	}
+	wealthtracker
+}
+
+# each row is a simulated trajectory
+# each column is a data
+head(sim1)
+hist(sim1[,n_days], 25)
+
+# Profit/loss
+mean(sim1[,n_days])
+mean(sim1[,n_days] - initial_wealth)
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+
+# 5% value at risk:
+quantile(sim1[,n_days]- initial_wealth, prob=.05)
+
+
+
+
+```
+
+In this portfolio, We have 3 ETFS. We  half our portfolio USMV which tracks equities that in the past have had a lower risk in the past. We also have 1/4 of our portfolio in an energy ETF VDE. We have the final quarter of our portfolio in SPLV another low volatility index. This is our most conservative option with a very low risk and only a 5% chance of losing 6000 dollars in any 20 day period. 
+
+```{r}
+mystocks = c( "VOO", "QQQ","TQQQ")
+myprices = getSymbols(mystocks, from = "2017-08-14")
+
+
+
+for(ticker in mystocks) {
+	expr = paste0(ticker, "a = adjustOHLC(", ticker, ")")
+	eval(parse(text=expr))
+}
+
+
+# Combine all the returns in a matrix
+all_returns = cbind( ClCl(VOOa),
+								ClCl(QQQ),
+								ClCl(TQQQa))
+head(all_returns)
+all_returns = as.matrix(na.omit(all_returns))
+
+# Compute the returns from the closing prices
+pairs(all_returns)
+
+# Sample a random return from the empirical joint distribution
+# This simulates a random day
+return.today = resample(all_returns, 1, orig.ids=FALSE)
+
+# Update the value of your holdings
+# Assumes an equal allocation to each asset
+total_wealth = 100000
+my_weights = c(0.3,0.3,.4)
+holdings = total_wealth*my_weights
+holdings = holdings*(1 + return.today)
+
+# Compute your new total wealth
+holdings
+total_wealth = sum(holdings)
+total_wealth
+
+# Now loop over a 20 day period
+
+## begin block
+total_wealth = 100000
+weights = c(0.3,0.4,.3)
+holdings = weights * total_wealth
+n_days = 20  # capital T in the notes
+wealthtracker = rep(0, n_days) # Set up a placeholder to track total wealth
+for(today in 1:n_days) {
+	return.today = resample(all_returns, 1, orig.ids=FALSE)  # sampling from R matrix in notes
+	holdings = holdings + holdings*return.today
+	total_wealth = sum(holdings)
+	wealthtracker[today] = total_wealth
+}
+total_wealth
+plot(wealthtracker, type='l')
+## end block
+
+# Now simulate many different possible futures
+# just repeating the above block thousands of times
+initial_wealth = 100000
+sim1 = foreach(i=1:5000, .combine='rbind') %do% {
+	total_wealth = initial_wealth
+	weights =c(0.3,0.4,.3)
+	holdings = weights * total_wealth
+	n_days = 10
+	wealthtracker = rep(0, n_days)
+	for(today in 1:n_days) {
+		return.today = resample(all_returns, 1, orig.ids=FALSE)
+		holdings = holdings + holdings*return.today
+		total_wealth = sum(holdings)
+		wealthtracker[today] = total_wealth
+	}
+	wealthtracker
+}
+
+# each row is a simulated trajectory
+# each column is a data
+head(sim1)
+hist(sim1[,n_days], 25)
+
+# Profit/loss
+mean(sim1[,n_days])
+mean(sim1[,n_days] - initial_wealth)
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+
+# 5% value at risk:
+quantile(sim1[,n_days]- initial_wealth, prob=.05)
+```
+In this portfolio, We have 3 ETFS. We  30% our portfolio VOO which tracks The S&P 500. We also have 40% of our portfolio in QQQ which also tracks the S&P 500. We have the 30% of our portfolio in TQQQ, this is a leveraged index of the S&P 500 meaning that all gains and losses are 3x. This is our most Aggressive option as we our betting heavily on companies in the S&P 500 and have a  5% chance of losing 11000 dollars in any 20 day period. 
+
+
+```{r}
+mystocks = c( "AOR", "VDE","XLE")
+myprices = getSymbols(mystocks, from = "2017-08-14")
+
+
+
+for(ticker in mystocks) {
+	expr = paste0(ticker, "a = adjustOHLC(", ticker, ")")
+	eval(parse(text=expr))
+}
+
+# Combine all the returns in a matrix
+all_returns = cbind( ClCl(AORa),
+								ClCl(VDEa),
+								ClCl(XLEa))
+head(all_returns)
+all_returns = as.matrix(na.omit(all_returns))
+
+# Compute the returns from the closing prices
+pairs(all_returns)
+
+# Sample a random return from the empirical joint distribution
+# This simulates a random day
+return.today = resample(all_returns, 1, orig.ids=FALSE)
+
+# Update the value of your holdings
+# Assumes an equal allocation to each asset
+total_wealth = 100000
+my_weights = c(0.3,0.3,.4)
+holdings = total_wealth*my_weights
+holdings = holdings*(1 + return.today)
+
+# Compute your new total wealth
+holdings
+total_wealth = sum(holdings)
+total_wealth
+
+# Now loop over a 20 day period
+
+## begin block
+total_wealth = 100000
+weights = c(0.3,0.4,.3)
+holdings = weights * total_wealth
+n_days = 20  # capital T in the notes
+wealthtracker = rep(0, n_days) # Set up a placeholder to track total wealth
+for(today in 1:n_days) {
+	return.today = resample(all_returns, 1, orig.ids=FALSE)  # sampling from R matrix in notes
+	holdings = holdings + holdings*return.today
+	total_wealth = sum(holdings)
+	wealthtracker[today] = total_wealth
+}
+total_wealth
+plot(wealthtracker, type='l')
+## end block
+
+# Now simulate many different possible futures
+# just repeating the above block thousands of times
+initial_wealth = 100000
+sim1 = foreach(i=1:5000, .combine='rbind') %do% {
+	total_wealth = initial_wealth
+	weights =c(0.3,0.4,.3)
+	holdings = weights * total_wealth
+	n_days = 10
+	wealthtracker = rep(0, n_days)
+	for(today in 1:n_days) {
+		return.today = resample(all_returns, 1, orig.ids=FALSE)
+		holdings = holdings + holdings*return.today
+		total_wealth = sum(holdings)
+		wealthtracker[today] = total_wealth
+	}
+	wealthtracker
+}
+
+# each row is a simulated trajectory
+# each column is a data
+head(sim1)
+hist(sim1[,n_days], 25)
+
+# Profit/loss
+mean(sim1[,n_days])
+mean(sim1[,n_days] - initial_wealth)
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+
+# 5% value at risk:
+quantile(sim1[,n_days]- initial_wealth, prob=.05)
+```
+In this portfolio, We have 3 ETFS. We 30% our portfolio AOR which tracks equities that are in the growth sector. We also have 40% of our portfolio in an energy ETF VDE. We have the final 40% our portfolio in XLE another energy index. This is our middle of the road option with higher risk as we bet heavily on energy a market that has been steady for 100+ years. We have a 5% chance of losing 8000 dollars in any 20 day period.  
+
+
+###############
+#PCA
+
+
+```{r}
+
+library(readr)
+wine <- read_csv("./wine.csv")
+
+ind <- sample(2, nrow(wine),
+              replace = TRUE,
+              prob = c(0.8, 0.2))
+training <- wine[ind==1,]
+testing <- wine[ind==2,]
+wine
+
+wine.pca <- prcomp(training[,c(1:12)], center = TRUE,scale. = TRUE)
+summary(wine.pca)
+wine
+wine.pca$rotation <- -1*wine.pca$rotation
+wine.pca$rotation
+biplot(wine.pca, scale = 0)
+
+trg <- predict(wine.pca, training)
+
+trg <- data.frame(trg, training[13])
+tst <- predict(wine.pca, testing)
+tst <- data.frame(tst, testing[13])
+
+p <- predict(wine.pca, trg)
+tab <- table(p, trg$Species)
+
+
+library(nnet)
+mymodel <- multinom(color~PC1+PC2, data = trg)
+summary(mymodel)
+
+p <- predict(mymodel, trg)
+tab <- table(p, trg$color)
+
+tab
+
+p1 <- predict(mymodel, tst)
+tab1 <- table(p1, tst$color)
+tab1
+# 1 % misclassification rate
+
+```
+
+#clustering 
+
+```{r}
+
+wine_2 = wine[-13]
+# Center/scale the data
+wine_2 %>% na.omit(wine_2)
+wine_scaled = scale(wine_2, center=TRUE, scale=TRUE) 
+
+# Form a pairwise distance matrix using the dist function
+wine_distance_matrix = dist(wine_scaled, method='euclidean')
+
+wine_scaled
+# Now run hierarchical clustering
+hier_wine = hclust(wine_distance_matrix, method='average')
+
+
+# Plot the dendrogram
+plot(hier_wine, cex=0.8)
+
+# Cut the tree into 5 clusters
+cluster1 = cutree(hier_wine, k=2)
+summary(factor(cluster1))
+
+# Examine the cluster members
+which(cluster1 == 1)
+which(cluster1 == 2)
+
+
+# Using max ("complete") linkage instead
+hier_protein2 = hclust(wine_distance_matrix, method='complete')
+
+# Plot the dendrogram
+plot(hier_protein2, cex=0.8)
+cluster2 = cutree(hier_protein2, k=5)
+summary(factor(cluster2))
+
+# Examine the cluster members
+which(cluster2 == 1)
+which(cluster2 == 2)
+which(cluster2 == 3)
+
+```
+After running both PCA and Clustering, it was aparent that PCA was the much more effective model. The heirarchal clustering values were not good This is because the values of the red and white wine were so close together that there simply was not a large enough difference in the data to effectively tell which wine was which However, in the PCA we ran could not have gone much better we were able to take the 13 variables down to 2 variables which we were able to plot against each other. This gave us a confusion matrix with 99% accuracy meaning that only a few wines were incorrectly placed in the wrong category. PCA was able to take these differences and reduce the number of variables allowing us to make us to make a very strong prediction about the type of wine. 
+
+
+
+#Market Segmentation 
+
+
+###Pre-Processing and First Correlation plot 
+```{r}
+
+library(readr)
+soc <- read_csv("./social_marketing.csv")
+soc <-soc[-1]
+
+d2 <- soc %>% 
+  as.matrix %>%
+  cor %>%
+  as.data.frame 
+
+
+mydata.cor = cor(soc, method = c("spearman"))
+#install.packages("corrplot")
+library(corrplot)
+
+corr_simple <- function(data=d2,sig=0.3){
+  #convert data to numeric in order to run correlations
+  #convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA
+  df_cor <- data %>% mutate_if(is.character, as.factor)
+  df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
+  #run a correlation and drop the insignificant ones
+  corr <- cor(df_cor)
+  #prepare to drop duplicates and correlations of 1     
+  corr[lower.tri(corr,diag=TRUE)] <- NA 
+  #drop perfect correlations
+  corr[corr == 1] <- NA 
+  #turn into a 3-column table
+  corr <- as.data.frame(as.table(corr))
+  #remove the NA values from above 
+  corr <- na.omit(corr) 
+  #select significant values  
+  corr <- subset(corr, abs(Freq) > sig) 
+  #sort by highest correlation
+  corr <- corr[order(-abs(corr$Freq)),] 
+  #print table
+  print(corr)
+  #turn corr back into matrix in order to plot with corrplot
+  mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  
+  #plot correlations visually
+  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+}
+
+corr_simple()
+```
+
+
+### Second and third correlation plots along with data frames
+```{r}
+corr_simple2 <- function(data=d2,sig=0.5){
+  #convert data to numeric in order to run correlations
+  #convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA
+  df_cor <- data %>% mutate_if(is.character, as.factor)
+  df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
+  #run a correlation and drop the insignificant ones
+  corr <- cor(df_cor)
+  #prepare to drop duplicates and correlations of 1     
+  corr[lower.tri(corr,diag=TRUE)] <- NA 
+  #drop perfect correlations
+  corr[corr == 1] <- NA 
+  #turn into a 3-column table
+  corr <- as.data.frame(as.table(corr))
+  #remove the NA values from above 
+  corr <- na.omit(corr) 
+  #select significant values  
+  corr <- subset(corr, abs(Freq) > sig) 
+  #sort by highest correlation
+  corr <- corr[order(-abs(corr$Freq)),] 
+  #print table
+  print(corr)
+  #turn corr back into matrix in order to plot with corrplot
+  mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  
+  #plot correlations visually
+  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+}
+
+corr_simple2()
+
+corr_simple3 <- function(data=d2,sig=0.7){
+  #convert data to numeric in order to run correlations
+  #convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA
+  df_cor <- data %>% mutate_if(is.character, as.factor)
+  df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
+  #run a correlation and drop the insignificant ones
+  corr <- cor(df_cor)
+  #prepare to drop duplicates and correlations of 1     
+  corr[lower.tri(corr,diag=TRUE)] <- NA 
+  #drop perfect correlations
+  corr[corr == 1] <- NA 
+  #turn into a 3-column table
+  corr <- as.data.frame(as.table(corr))
+  #remove the NA values from above 
+  corr <- na.omit(corr) 
+  #select significant values  
+  corr <- subset(corr, abs(Freq) > sig) 
+  #sort by highest correlation
+  corr <- corr[order(-abs(corr$Freq)),] 
+  #print table
+  print(corr)
+  j <- corr %>% group_by(Var1,Var2) %>% count()
+  print(j)
+  #turn corr back into matrix in order to plot with corrplot
+  mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
+  
+  #plot correlations visually
+  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+}
+
+corr_simple3()
+```
+
+
+
+#PCA and clustering analysis along with network graph 
+```{r}
+# this gives us a good idea of what people looked at together 
+soc
+soc.pca <- prcomp(na.omit(soc),center = T,scale. = T)
+summary(soc.pca)
+soc
+soc.pca$rotation <- -1*soc.pca$rotation
+soc.pca$rotation
+
+
+pr_var <-  soc.pca$sdev ^ 2
+pve <- pr_var / sum(pr_var)
+plot(pve, xlab = "Principal Component", ylab = "Proportion of Variance Explained", ylim = c(0,1), type = 'b')
+
+plot(cumsum(pve), xlab = "Principal Component", ylab = "Cumulative Proportion of Variance Explained", ylim =c(0,1), type = 'b')
+biplot(soc.pca, scale = 0)
+#install.packages('factoextra')
+library(factoextra)
+soc.pca$sdev
+
+soc_transform = as.data.frame(-soc.pca$x[,1:36])
+
+soc_transform
+k = 9
+fviz_nbclust(soc_transform, kmeans, method = 'wss')
+kmeans_soc = kmeans(soc_transform, centers = k, nstart = 50)
+fviz_cluster(kmeans_soc, data = soc_transform,pointsize = 1,labelsize = 1)
+
+
+library(igraph)
+soc_mat <- as.matrix(soc)
+soc_graph<- soc[1:100,]
+soc_mat <- as.matrix(soc_graph)
+
+library(Matrix)
+
+mydata.cor = cor(soc, method = c("spearman"))
+
+mydata.cor<- as.matrix(mydata.cor)
+
+
+# takes out the weak correlations
+mydata.cor[mydata.cor<abs(.25)] <- 0
+
+#creates a network graph 
+network<-  graph_from_adjacency_matrix(mydata.cor, mode="undirected", diag=F,weighted = T,add.rownames = T)
+
+plot(network,vertex.label.cex=.35,edge.color=rep(c("red","pink"),5),edge.width=4,layout = layout.fruchterman.reingold(network),Title = 'Network graph')
+
+soc2 <- soc %>% select(sports_fandom,family,food,school,shopping,travel,health_nutrition,personal_fitness)
+
+soc2.pca <- prcomp(soc2,center = T,scale. = T)
+summary(soc2.pca)
+
+soc2.pca$rotation <- -1*soc.pca$rotation
+soc2.pca$rotation
+
+soc_transform = as.data.frame(-soc2.pca$x[,1:7])
+
+
+k = 4
+fviz_nbclust(soc_transform, kmeans, method = 'wss')
+kmeans_soc = kmeans(soc_transform, centers = k, nstart = 50)
+fviz_cluster(kmeans_soc, data = soc_transform,pointsize = 1,labelsize = 1)
+```
+#conclusion 
+Using the Market Segmentation data our task is to find trends in what people are looking at to try and figure how to more effectively market at all of our customers. The place I first wanted to start was looking at some correlation matrices. These matrices will help us see which categories are highly correlated with one another. This will help us get an idea of what categories people looked at together. The functions I used created a table with the relative correlation values. I had 3 different matrices each one getting more selective than the last. The first Matrix included all correlations with .3 or higher, this means even weak correlations were included. This matrix was hard to read and did not provide us with any valuable information. However, moving up the ladder and making removing the weaker correlation eventually up to .75 provides us with a much clearer picture. These correlations provide a good base on how the categories interact with one another. I wanted to use PCA to reduce the dimensions of my data set but after running it, it simply did not paint a clear picture of different groups. This can be seen in my cluster plot I created.  However, using some of the highly correlated categories. Using these categories I ran another PCA this PCA heeded better results but still not great. Finally I created a network graph to show how some of the correlations related to one another. This helps us see which categories can be advertised to the most wide range of categories. I think this was the most helpful insight from my analysis. Sometimes unsupervised learning isn't the best choice and until I figure out what to do with the parameters to make them more understandable, I believe the best way to look at marketing would be to find the correlations and just make ad suggestions based on those with high correlations. 
+
+
+
+
+
+
+
+
+
