@@ -75,4 +75,5 @@ dollars more per square foot.
 While looking at the box plot we see that the non-green buildings have a
 fair amount more outliers, which explains the guru’s reasoning for using
 the median as opposed to the mean.
+
 ![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-5-1.png)
