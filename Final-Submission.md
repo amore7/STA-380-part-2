@@ -207,14 +207,22 @@ viewed as environmentally conscious.
 
 ## Summary and Conclusions
 
-*There is a slight positive relationship between rent and occupancy
-rates. *Green buildings have a slightly higher rate of occupancy. *No
-clear corrolation between building age and occupancy rate *There is an
-additional $2.6 per square foot in revenue for green buildings, and this
-difference increases to ~$4.8 for clusters 300 - 600. *Rent and
-available square footage have a small positive corrolation. *Green
-buildings are, on average, ~ 100,000 square feet larger than non-green
-buildings, but more data is needed to further explore this idea.
+-   There is a slight positive relationship between rent and occupancy
+    rates.
+
+-   Green buildings have a slightly higher rate of occupancy.
+
+-   No clear corrolation between building age and occupancy rate
+
+-   There is an additional $2.6 per square foot in revenue for green
+    buildings, and this difference increases to ~$4.8 for clusters 300 -
+    600.
+
+-   Rent and available square footage have a small positive corrolation.
+
+-   Green buildings are, on average, ~ 100,000 square feet larger than
+    non-green buildings, but more data is needed to further explore this
+    idea.
 
 The guru seems to be correct, with the average age of green buildings
 being 22 years, we should expect to make our money back within 10 years
