@@ -1,0 +1,159 @@
+---
+title: "Untitled"
+author: "Mark Moreno"
+date: "2022-08-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Reuters Corpus -Aaron Pressman 
+
+```{r}
+library(tm) 
+library(tidyverse)
+library(slam)
+library(proxy)
+
+readerPlain = function(fname){
+    readPlain(elem=list(content=readLines(fname)), 
+              id=fname, language='en') }
+
+
+
+file_list = Sys.glob('/Users/markmoreno/Desktop/MSBA Stuff/Intro to Machine Learning/STA380/data/ReutersC50/C50train/AaronPressman/*.txt')
+
+
+aaron = lapply(file_list, readerPlain) 
+
+
+file_list
+
+
+mynames = file_list %>%
+    { strsplit(., '/', fixed=TRUE) } %>%
+    { lapply(., tail, n=2) } %>%
+    { lapply(., paste0, collapse = '') } %>%
+    unlist
+
+# Rename the articles 
+mynames
+names(aaron) = mynames
+
+## once you have documents in a vector, you 
+## create a text mining 'corpus' with: 
+documents_raw = Corpus(VectorSource(aaron))
+
+## Some pre-processing/tokenization steps.
+## tm_map just maps some function to every document in the corpus
+my_documents = documents_raw
+my_documents = tm_map(my_documents, content_transformer(tolower)) # make everything lowercase
+my_documents = tm_map(my_documents, content_transformer(removeNumbers)) # remove numbers
+my_documents = tm_map(my_documents, content_transformer(removePunctuation)) # remove punctuation
+my_documents = tm_map(my_documents, content_transformer(stripWhitespace)) ## remove excess white-space
+
+## Remove stopwords.  Always be careful with this!
+stopwords("en")
+stopwords("SMART")
+
+my_documents = tm_map(my_documents, content_transformer(removeWords), stopwords("en"))
+
+
+## create a doc-term-matrix
+DTM_aaron = DocumentTermMatrix(my_documents)
+DTM_aaron # some basic summary statistics
+
+class(DTM_aaron)  # a special kind of sparse matrix format
+
+## You can inspect its entries...
+
+
+## ...find words with greater than a min count...
+findFreqTerms(DTM_aaron, 50)
+
+## ...or find words whose count correlates with a specified word.
+findAssocs(DTM_aaron, "banks", .5) 
+
+## Drop those terms that only occur in one or two documents
+## This is a common step: the noise of the "long tail" (rare terms)
+##	can be huge, and there is nothing to learn if a term occurred once.
+## Below removes those terms that have count 0 in >95% of docs.  
+## Probably a bit extreme in most cases... but here only 50 docs!
+DTM_aaron = removeSparseTerms(DTM_aaron, 0.95)
+DTM_aaron # now ~ 1000 terms (versus ~3000 before)
+
+# construct TF IDF weights
+tfidf_aaron = weightTfIdf(DTM_aaron)
+
+####
+# Compare documents
+####
+
+# could go back to the raw corpus
+
+
+####
+# Dimensionality reduction
+####
+
+# Now PCA on term frequencies
+X = as.matrix(tfidf_aaron)
+summary(colSums(X))
+scrub_cols = which(colSums(X) == 0)
+X = X[,-scrub_cols]
+
+pca_aaron = prcomp(X, rank=2, scale=TRUE)
+plot(pca_aaron) 
+
+# Look at the loadings
+pca_aaron$rotation[order(abs(pca_aaron$rotation[,1]),decreasing=TRUE),1][1:25]
+pca_aaron$rotation[order(abs(pca_aaron$rotation[,2]),decreasing=TRUE),2][1:25]
+
+
+## Look at the first two PCs..
+# We've now turned each document into a single pair of numbers -- massive dimensionality reduction
+pca_aaron$x[,1:2]
+
+plot(pca_aaron$x[,1:2], xlab="PCA 1 direction", ylab="PCA 2 direction", bty="n",
+     type='n', )
+text(pca_aaron$x[,1:2], labels = 1:length(aaron), cex=1)
+
+# all about the federal reserve 
+content(aaron[[25]])
+content(aaron[[20]])
+content(aaron[[24]])
+
+# IPapers about banking and technology intersection. 
+content(aaron[[39]])
+content(aaron[[43]])
+content(aaron[[34]])
+
+
+### Papers about strictly Technology 
+content(aaron[[44]])
+content(aaron[[45]])
+
+
+#####
+# Cluster documents
+#####
+
+# define the distance matrix
+# using the PCA scores
+dist_mat = dist(pca_aaron$x)
+tree_aaron = hclust(dist_mat)
+plot(tree_aaron)
+clust5 = cutree(tree_aaron, k=5)
+
+# inspect the clusters
+which(clust5 == 3)
+
+
+```
+For the reuters corpus text analysis problem, we decided to take a deeper dive into a particularly successful New York Times corpus fortune senior writer, Aaron Pressman. After his successful career reporting at Business Week, The Industry Standard, and Bloomberg, and his SABEW “Best in Business Award”, our group was interested in further investigating where Pressman’s passions lie within the reporting industry. We wanted to specifically analyze what Pressman’s works look like on a deeper level, aling with these areas that have made him so successful in the writing industry. We decided to take a similar approach to that of class in order to further investigate Pressman’s works and career. The file includes data relating to the New York Times annotated Corpus with text included of articles written by NYT authors.
+
+In this analysis, we found out information on what Aaron Pressman was writing about, Aaron pressman wrote about a few topics mostly in the Banking and Technology we used principal components analysis to take down the number of variables to only two single variables. This was surprisingly good at taking the overall meaning of his papers. This was seen in the analysis of the content of each of the papers. A couple were strictly banking, most were a mix, and finally some were just tech. Using PCA is a great way to find out the overall meaning of a large set of documents. 
+
+
