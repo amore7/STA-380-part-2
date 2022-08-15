@@ -59,7 +59,7 @@ how this person described his process:
 > analysis, and still felt unconvinced. She has therefore asked you to
 > revisit the report, so that she can get a second opinion.
 
-## Exploratory Data Analysis
+### Exploratory Data Analysis
 
 it may seem like the stats guru is on point with their analysis upon
 first glance when using the same assumption and removing the rows with
@@ -77,3 +77,51 @@ fair amount more outliers, which explains the guru’s reasoning for using
 the median as opposed to the mean.
 
 ![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-5-1.png)
+
+### Rent vs. Occupancy Rates
+
+We can see that the minimum rent is fairly constant for all occupancy
+rates, but the maximum increases with higher occupancy rates:
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+
+Looking further into this we can note that the green buildings have a
+higher median occupancy rate, which could be attributed to the awarness
+mentioned in the information provided with the problem, but the true
+cause can’t be verified with the data provded.
+
+    ## # A tibble: 2 × 3
+    ##   green_rating med_occupancy count
+    ##   <fct>                <dbl> <int>
+    ## 1 0                     89.2  7209
+    ## 2 1                     92.9   685
+
+### Age vs. Occupancy Rates
+
+From the plot there is no clear relationship between age and occupancy
+rate.
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-8-1.png)
+
+## POSSIBLE UNEXPECTED FACTORS AFFECTING RENT DIFFERENCE
+
+Factors that may inderectly influence the rent for buildings
+
+### 1. Number of stories
+
+From the plot, we can see that the minimum rent charged increases with
+the number of stories, but the median height of a green building is only
+one story taller than a non-green building, which likely isn’t a large
+enough difference. So while a taller building may be able to demand more
+rent, this likely isn’t a strong enough factor to influence the decision
+to go green.
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-9-1.png)
+
+    ## # A tibble: 2 × 2
+    ##   green_rating med_stories
+    ##   <fct>              <int>
+    ## 1 0                     10
+    ## 2 1                     11
+
+## 2. Amenities
