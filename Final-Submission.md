@@ -125,3 +125,97 @@ to go green.
     ## 2 1                     11
 
 ## 2. Amenities
+
+When loooking at the possility of amenities being a factor in raising
+rent, we see that most green buildings have amenities (~73%), where
+about only half non-green buildings have them (~52%). When comparting
+rent for green and non-green buildings with and withput amenities, we
+see that green buildings still charge $2 to $2.8 more per square foot
+irreguarless of amenities, meaning this isn’t a factor in the differnce
+in rent.
+
+    ## `summarise()` has grouped output by 'green_rating'. You can override using the
+    ## `.groups` argument.
+
+    ## # A tibble: 4 × 4
+    ## # Groups:   green_rating [2]
+    ##   green_rating amenities med_rent count
+    ##   <fct>        <fct>        <dbl> <int>
+    ## 1 0            0             25    3550
+    ## 2 0            1             25    3659
+    ## 3 1            0             27     187
+    ## 4 1            1             27.8   498
+
+## 3. Age
+
+We can see that the median green building is about 15 years newer than
+the median non-green building, thus we should consider that maybe newer
+buildings demand a higher rent by default and that this upcharge isn’t
+necessarily due to the fact the building is green.
+
+    ## # A tibble: 2 × 3
+    ##   green_rating med_age count
+    ##   <fct>          <int> <int>
+    ## 1 0                 37  7209
+    ## 2 1                 22   685
+
+Looking at the plot of rent vs building age, there is hard to see a
+clear correlation in the data, with maybe a slight downward trend after
+the building has reached 100 years old, but there isn’t enough data on
+green buildings at that age to manke any conclusions.
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-12-1.png)
+
+## 4. Space
+
+When looking at the plot of rent vs square footage, we can see that the
+minimum rent charged increases with available leasing space.
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-13-1.png)
+
+Then, when we look a the median and mean square footage for green and
+non-green buildings we see that green building have a greater value for
+each, so they have more space to lease in general, which could be a
+potential unexpected factor in the rent upcharge.
+
+    ## # A tibble: 2 × 3
+    ##   green_rating med_size mean_size
+    ##   <fct>           <int>     <dbl>
+    ## 1 0              118696   225977.
+    ## 2 1              241150   325781.
+
+## 5. Clustering (Building location)
+
+Could location influence the rent price for buildings? Could we use
+location to maximize profits for our new building?
+
+Looking at a plot of rent vs cluster, we can notice a distinct trend in
+clusters 300 to around 600. When looking at the median value for these
+clusters separating by if the building is green or not, we can see that
+the green buildings charge ~$4.8 more per square foot in the same
+cluster, meaning in these areas the perception of a green building is
+potentially more positive and people are willing to pay more to be
+viewed as environmentally conscious.
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-15-1.png)
+
+    ## # A tibble: 2 × 3
+    ##   green_rating   med count
+    ##   <fct>        <dbl> <int>
+    ## 1 0             28.2  2640
+    ## 2 1             33     243
+
+## Summary and Conclusions
+
+*There is a slight positive relationship between rent and occupancy
+rates. *Green buildings have a slightly higher rate of occupancy. *No
+clear corrolation between building age and occupancy rate *There is an
+additional $2.6 per square foot in revenue for green buildings, and this
+difference increases to ~$4.8 for clusters 300 - 600. *Rent and
+available square footage have a small positive corrolation. *Green
+buildings are, on average, ~ 100,000 square feet larger than non-green
+buildings, but more data is needed to further explore this idea.
+
+The guru seems to be correct, with the average age of green buildings
+being 22 years, we should expect to make our money back within 10 years
+then make additional revenue from then on.
