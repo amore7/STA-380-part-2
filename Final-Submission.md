@@ -124,7 +124,7 @@ to go green.
     ## 1 0                     10
     ## 2 1                     11
 
-## 2. Amenities
+### 2. Amenities
 
 When loooking at the possility of amenities being a factor in raising
 rent, we see that most green buildings have amenities (~73%), where
@@ -146,7 +146,7 @@ in rent.
     ## 3 1            0             27     187
     ## 4 1            1             27.8   498
 
-## 3. Age
+### 3. Age
 
 We can see that the median green building is about 15 years newer than
 the median non-green building, thus we should consider that maybe newer
@@ -166,7 +166,7 @@ green buildings at that age to manke any conclusions.
 
 ![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-12-1.png)
 
-## 4. Space
+### 4. Space
 
 When looking at the plot of rent vs square footage, we can see that the
 minimum rent charged increases with available leasing space.
@@ -184,7 +184,7 @@ potential unexpected factor in the rent upcharge.
     ## 1 0              118696   225977.
     ## 2 1              241150   325781.
 
-## 5. Clustering (Building location)
+### 5. Clustering (Building location)
 
 Could location influence the rent price for buildings? Could we use
 location to maximize profits for our new building?
@@ -205,7 +205,7 @@ viewed as environmentally conscious.
     ## 1 0             28.2  2640
     ## 2 1             33     243
 
-## Summary and Conclusions
+### Summary and Conclusions
 
 -   There is a slight positive relationship between rent and occupancy
     rates.
@@ -227,3 +227,7 @@ viewed as environmentally conscious.
 The guru seems to be correct, with the average age of green buildings
 being 22 years, we should expect to make our money back within 10 years
 then make additional revenue from then on.
+
+## Visual story telling part 2: Capital Metro data
+
+![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-1.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-2.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-3.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-4.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-5.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-6.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-7.png)![](Final-Submission_files/figure-markdown_strict/unnamed-chunk-18-8.png)
